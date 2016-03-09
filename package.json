@@ -1,0 +1,23 @@
+{
+  "name": "ghost-storage",
+  "version": "1.0.0",
+  "description": "Storage plugin for Ghost blog",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VictorCoder123/ghost-storage.git"
+  },
+  "keywords": [
+    "ghost",
+    "storage"
+  ],
+  "author": "Qishen Zhang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VictorCoder123/ghost-storage/issues"
+  },
+  "homepage": "https://github.com/VictorCoder123/ghost-storage#readme"
+}
