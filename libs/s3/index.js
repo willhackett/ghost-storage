@@ -6,7 +6,6 @@
 
 var AWS = require('aws-sdk');
 var Q = require('q');
-var promise = require('bluebird'),
 var path = require('path');
 var moment = require('moment');
 var fs = require('fs');
@@ -20,13 +19,20 @@ var S3FileStore = function (s3config) {
   });
   this.s3 = new AWS.S3();
   this.bucket = s3config.bucket;
+  this.awsPath = s3config.awsPath;
 }
 
 // Prototypal inheritance from baseStore
 S3FileStore.prototype = Object.create(baseStore.prototype);
 S3FileStore.prototype.constructor = S3FileStore;
 
-// Only for test aws
+/**
+ * List all buckets in current s3 storage, this method is actually
+ * irrelevant to implementation of ghost-storage plugin, but used to
+ * test the connection between server and s3 storage.
+ * @param  {Function} callback
+ * @return {void}
+ */
 S3FileStore.prototype.listBuckets = function (callback) {
   this.s3.listBuckets(function(err, data){
     if(err) console.log(err);
@@ -35,10 +41,27 @@ S3FileStore.prototype.listBuckets = function (callback) {
 }
 
 /**
- * Save
- * @param  {Image} image     [description]
- * @param  {String} targetDir [description]
- * @return {Promise}           [description]
+ * Delete object in current bucket
+ * This method is only used in testing
+ * @param  {String} filename
+ * @return {void}
+ */
+S3FileStore.prototype.deleteObject = function (filename, callback) {
+  var params = {
+    Bucket: this.bucket,
+    Key: filename
+  };
+  this.s3.deleteObject(params, function(err, data){
+    if(err) console.log(err);
+    callback();
+  });
+}
+
+/**
+ * Save image to storage in S3
+ * @param  {Image}  image
+ * @param  {String} targetDir
+ * @return {Promise} returns a promise resolve to full url of uploaded image
  */
 S3FileStore.prototype.save = function (image, targetDir) {
   var self = this;
@@ -46,34 +69,53 @@ S3FileStore.prototype.save = function (image, targetDir) {
     deferred.reject(new Error('Image object is broken.'));
 
   targetDir = targetDir || this.getTargetDir();
-  var buffer_promise = promise.promisify(fs.readFile)(image.path);
-  var filename_promise = this.getUniqueFileName(image, targetDir);
+  var pathname; // Assign a value in promise and return later
 
-  var putObject = function (params) {
+  // Helper function to generate buffer promise
+  var getBuffer = function (path) {
     var deferred = Q.defer();
-    self.s3.putObject(params, function(err, data){
-
+    fs.readFile(path, function(err, buffer){
+      if(err) deferred.reject(err);
+      else deferred.resolve(buffer);
     });
     return deferred.promise;
   }
+  // Helper function to generate putObject promise in S3 operation
+  var putObject = function (params) {
+    var deferred = Q.defer();
+    self.s3.putObject(params, function(err, data){
+      if(err) deferred.reject(err);
+      else deferred.resolve(data);
+    });
+    return deferred.promise;
+  }
+  // Generate two promises for getting filename and buffer
+  var filename_promise = this.getUniqueFileName(image, targetDir);
+  var buffer_promise = getBuffer(image.path);
 
   return Q.all([buffer_promise, filename_promise])
-    .then(function(list){
+    .spread(function(buffer, filename){
       // return [buffer, filename] as list
+      pathname = filename;
       var params = {
-        Bucket: this.bucket,
-        Key: list[1],
-        Body: list[0]
+        Bucket: self.bucket,
+        Key: filename,
+        Body: buffer
       };
-      return params;
+      return putObject(params);
     })
-    .then(function(params){
-      self.s3.putObject(params, function(err, data){
-
-      });
+    .then(function(){
+      // Must return a whole URI in order to be accessed
+      var url = 'http://' + self.bucket + '.' + self.awsPath + '/' + pathname;
+      return url;
     });
 }
 
+/**
+ * If your module's save() method returns absolute URLs,
+ * serve() can be a no-op pass through middleware function
+ * @return {void}
+ */
 S3FileStore.prototype.serve = function () {
   // a no-op, these are absolute URLs
   return function (req, res, next) {
@@ -90,9 +132,10 @@ S3FileStore.prototype.exists = function (filename) {
   var deferred = Q.defer();
   var params = { Bucket: this.bucket, Key: filename };
   this.s3.getObject(params, function (err, data) {
-    console.log(data);
-    if(err) deferred.reject(err);
-    else deferred.resolve(data !== null);
+    //console.log(err.code);
+    if(data !== null) deferred.resolve(true);
+    else if(err && err.code === 'NoSuchKey') deferred.resolve(false);
+    else deferred.reject(err);
   });
   return deferred.promise;
 }
