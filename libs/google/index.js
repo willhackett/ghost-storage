@@ -100,7 +100,7 @@ GoogleFileStore.prototype.save = function (image, targetDir) {
     })
     .then(function(){
       // Return url for uploaded image
-      var url = 'https://' + this.gcloudPath + '/' + this.bucketname + '/' + pathname;
+      var url = 'https://' + self.gcloudPath + '/' + self.bucketname + '/' + pathname;
       return url;
     });
 }
