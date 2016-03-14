@@ -141,10 +141,3 @@ S3FileStore.prototype.exists = function (filename) {
 }
 
 module.exports = S3FileStore;
-
-
-
-
-
-
-

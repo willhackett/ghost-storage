@@ -2,3 +2,4 @@ node_modules
 *.log
 *.sublime-*
 */**/config.js
+*/**/key.json

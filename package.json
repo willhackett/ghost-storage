@@ -1,6 +1,6 @@
 {
   "name": "ghost-storage",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Storage plugin for Ghost blog",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,7 @@
   "dependencies": {
     "aws-sdk": "^2.2.42",
     "fs": "0.0.2",
+    "gcloud": "^0.29.0",
     "moment": "^2.12.0",
     "path": "^0.12.7",
     "q": "^1.4.1"
