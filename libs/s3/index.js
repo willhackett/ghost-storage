@@ -20,6 +20,7 @@ var S3FileStore = function (s3config) {
   this.s3 = new AWS.S3();
   this.bucket = s3config.bucket;
   this.awsPath = s3config.awsPath;
+  this.awsHost = s3config.cdnHost || false;
 }
 
 // Prototypal inheritance from baseStore
@@ -105,9 +106,9 @@ S3FileStore.prototype.save = function (image, targetDir) {
       return putObject(params);
     })
     .then(function(){
-      // Must return a whole URI in order to be accessed
-      var url = 'http://' + self.bucket + '.' + self.awsPath + '/' + pathname;
-      return url;
+      if (self.awsHost)
+        return self.awsHost + pathname;
+      return 'http://' + self.bucket + '.' + self.awsPath + '/' + pathname;
     });
 }
 

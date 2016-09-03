@@ -40,10 +40,11 @@ production: {
   "storage": {
       "active": "ghost-storage",
       "ghost-storage": {
-          "accessKeyId": "",
+        "accessKeyId": "",
         "secretAccessKey": "",
         "bucket": "example_bucket",
-        "awsPath": "s3-website-us-east-1.amazonaws.com"
+        "awsPath": "s3-website-us-east-1.amazonaws.com",
+        "cdnHost": "https://cdn.yourdomain.com/" //OPTIONAL: If you serve files from a different path than storage.googleapis.com.
       }
   },
 }
