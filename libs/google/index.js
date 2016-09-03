@@ -19,6 +19,7 @@ var GoogleFileStore = function (gconfig) {
   this.gcs = gcloudAuthed.storage();
   // Use default gcloud path if not specified
   this.gcloudPath = gconfig.gcloudPath || 'storage.googleapis.com';
+  this.gcloudHost = gconfig.cdnHost || false;
   this.bucketname = gconfig.bucket;
 
   // Check if bucket exists by bucketname
@@ -100,8 +101,9 @@ GoogleFileStore.prototype.save = function (image, targetDir) {
     })
     .then(function(){
       // Return url for uploaded image
-      var url = 'https://' + self.gcloudPath + '/' + self.bucketname + '/' + pathname;
-      return url;
+      if (this.gcloudHost)
+        return this.gcloudHost + pathname;
+      return 'https://' + self.gcloudPath + '/' + self.bucketname + '/' + pathname;
     });
 }
 

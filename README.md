@@ -73,7 +73,8 @@ production: {
         projectId: '',
             keyFilename: path.join(__dirname, './key.json'),
             bucket: 'bucket name',
-            gcloudPath: 'storage.googleapis.com'
+            gcloudPath: 'storage.googleapis.com',
+            cdnHost: 'https://cdn.yourdomain.com/' //OPTIONAL: If you serve files from a different path than storage.googleapis.com.
       }
   },
 }
