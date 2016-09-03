@@ -13,6 +13,7 @@ var fs = require('fs');
 var baseStore = require('../base');
 
 var S3FileStore = function (s3config) {
+  baseStore.call(this);
   AWS.config.update({
     accessKeyId: s3config.accessKeyId,
     secretAccessKey: s3config.secretAccessKey

@@ -11,6 +11,7 @@ var gcloud = require('gcloud')
 var baseStore = require('../base');
 
 var GoogleFileStore = function (gconfig) {
+  baseStore.call(this);
   var gcloudAuthed = gcloud({
     projectId: gconfig.projectId,
     keyFilename: gconfig.keyFilename
